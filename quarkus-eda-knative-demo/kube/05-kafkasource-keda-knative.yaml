@@ -1,0 +1,23 @@
+apiVersion: sources.knative.dev/v1beta1
+kind: KafkaSource
+metadata:
+  name: kafka-source
+  namespace: kafka-keda-knative
+  annotations:
+    autoscaling.knative.dev/class: keda.autoscaling.knative.dev
+    autoscaling.knative.dev/minScale: "0" 
+    autoscaling.knative.dev/maxScale: "10" 
+    keda.autoscaling.knative.dev/pollingInterval: "10"
+    keda.autoscaling.knative.dev/cooldownPeriod: "10"
+    keda.autoscaling.knative.dev/kafkaLagThreshold: "10"
+spec:
+  consumerGroup: knative-group
+  bootstrapServers:
+    - my-cluster-kafka-bootstrap.kafka-keda-knative:9092
+  topics:
+    - my-topic
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: quarkus-eda-knative-demo

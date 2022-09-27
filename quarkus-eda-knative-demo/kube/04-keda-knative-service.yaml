@@ -1,0 +1,15 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: quarkus-eda-knative-demo
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "10"
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/target: "1"
+        autoscaling.knative.dev/targetUtilizationPercentage: "30"
+    spec:
+      containers:
+        - image: quay.io/danieloh30/quarkus-eda-knative-demo:1.0

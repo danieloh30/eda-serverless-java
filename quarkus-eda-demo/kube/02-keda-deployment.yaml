@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quarkus-eda-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quarkus-eda-demo
+  template:
+    metadata:
+      labels:
+        app: quarkus-eda-demo
+    spec:
+      containers:
+        - env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: my-cluster-kafka-bootstrap:9092
+          name: quarkus-eda-demo
+          image: quay.io/danieloh30/quarkus-eda-demo:1.2
+          imagePullPolicy: IfNotPresent
