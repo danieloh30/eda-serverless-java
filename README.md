@@ -21,6 +21,10 @@ metadata:
   name: knative-kafka
   namespace: knative-eventing
 spec:
+  broker:
+    enabled: false
+  channel:
+    enabled: false
   sink:
     enabled: true
   source:
