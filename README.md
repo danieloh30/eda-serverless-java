@@ -18,11 +18,11 @@ ko apply -f quarkus-eda-knative-demo/kube/01-autoscaler-keda.yaml
 apiVersion: operator.serverless.openshift.io/v1alpha1
 kind: KnativeKafka
 metadata:
-    name: knative-kafka
-    namespace: knative-eventing
+  name: knative-kafka
+  namespace: knative-eventing
 spec:
-    channel:
-        enabled: false 
-    source:
-        enabled: true 
+  sink:
+    enabled: true
+  source:
+    enabled: true
 ```
