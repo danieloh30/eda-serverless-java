@@ -1,3 +1,4 @@
+# This is for Use case 2
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,5 +18,5 @@ spec:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: my-cluster-kafka-bootstrap:9092
           name: quarkus-eda-demo
-          image: quay.io/danieloh30/quarkus-eda-demo:1.10
+          image: quay.io/danieloh30/quarkus-eda-demo:1.11
           imagePullPolicy: IfNotPresent
