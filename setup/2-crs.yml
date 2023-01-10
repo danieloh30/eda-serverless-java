@@ -1,0 +1,51 @@
+---
+# Set up Knative serving
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeServing
+metadata:
+  name: knative-serving
+  namespace: knative-serving
+spec: {}
+---
+# Set up Knative eventing
+kind: KnativeEventing
+apiVersion: operator.knative.dev/v1beta1
+metadata:
+  name: knative-eventing
+  namespace: knative-eventing
+spec: {}
+---
+apiVersion: operator.serverless.openshift.io/v1alpha1
+kind: KnativeKafka
+metadata:
+  name: knative-kafka
+  namespace: knative-eventing
+spec:
+  broker:
+    enabled: false
+  channel:
+    enabled: false
+  sink:
+    enabled: true
+  source:
+    enabled: true
+---
+# Set up custom metrics autoscaler
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-keda
+---
+kind: KedaController
+apiVersion: keda.sh/v1alpha1
+metadata:
+  name: keda
+  namespace: openshift-keda
+spec:
+  watchNamespace: ''
+  operator:
+    logLevel: info
+    logEncoder: console
+  metricsServer:
+    logLevel: '0'
+  serviceAccount: {}
