@@ -3,6 +3,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quarkus-eda-demo
+  labels:
+    app.openshift.io/runtime: quarkus
 spec:
   replicas: 1
   selector:
