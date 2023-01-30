@@ -5,7 +5,7 @@
   <groupId>org.acme</groupId>
   <artifactId>quarkus-eda-demo</artifactId>
   <version>1.0.0-SNAPSHOT</version>
- <properties>
+  <properties>
     <compiler-plugin.version>3.10.1</compiler-plugin.version>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

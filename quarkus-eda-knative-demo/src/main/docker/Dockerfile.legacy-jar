@@ -7,18 +7,18 @@
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.legacy-jar -t quarkus/quarkus-eda-knative-demo-legacy-jar .
+# docker build -f src/main/docker/Dockerfile.legacy-jar -t quarkus/kube-native-java-legacy-jar .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/quarkus-eda-knative-demo-legacy-jar
+# docker run -i --rm -p 8080:8080 quarkus/kube-native-java-legacy-jar
 #
 # If you want to include the debug port into your docker image
 # you will have to expose the debug port (default 5005) like this :  EXPOSE 8080 5005
 #
 # Then run the container using :
 #
-# docker run -i --rm -p 8080:8080 quarkus/quarkus-eda-knative-demo-legacy-jar
+# docker run -i --rm -p 8080:8080 quarkus/kube-native-java-legacy-jar
 #
 # This image uses the `run-java.sh` script to run the application.
 # This scripts computes the command line to execute your Java application, and
@@ -75,9 +75,9 @@
 #   accessed directly. (example: "foo.example.com,bar.example.com")
 #
 ###
-FROM registry.access.redhat.com/ubi8/openjdk-11:1.11
+FROM registry.access.redhat.com/ubi8/openjdk-17:1.14
 
-ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
+ENV LANGUAGE='en_US:en'
 
 
 COPY target/lib/* /deployments/lib/
@@ -85,6 +85,5 @@ COPY target/*-runner.jar /deployments/quarkus-run.jar
 
 EXPOSE 8080
 USER 185
-ENV AB_JOLOKIA_OFF=""
 ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
