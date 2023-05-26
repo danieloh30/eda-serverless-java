@@ -28,11 +28,6 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
-    <!-- <dependency>
-        <groupId>io.fabric8</groupId>
-        <artifactId>kubernetes-client</artifactId>
-        <version>6.6.0</version>
-    </dependency> -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-arc</artifactId>
