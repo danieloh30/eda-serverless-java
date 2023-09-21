@@ -13,12 +13,28 @@ spec:
   source: redhat-operators
   sourceNamespace: openshift-marketplace
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-keda
+  labels:
+    name: openshift-keda
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: openshift-keda
+  namespace: openshift-keda
+spec:
+  targetNamespaces:
+  - openshift-keda
+---
 # Custom Metrics Autoscaler operator
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: openshift-custom-metrics-autoscaler-operator
-  namespace: openshift-operators
+  namespace: openshift-keda
 spec:
   channel: stable
   installPlanApproval: Automatic
