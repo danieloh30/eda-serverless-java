@@ -20,5 +20,5 @@ spec:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: my-cluster-kafka-bootstrap:9092
           name: quarkus-eda-demo
-          image: quay.io/danieloh30/quarkus-eda-demo:3.9.5
+          image: quay.io/danieloh30/quarkus-eda-demo:3.10.0
           imagePullPolicy: IfNotPresent
