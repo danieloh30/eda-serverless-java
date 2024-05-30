@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: quarkus-eda-demo
   labels:
-    app.openshift.io/runtime: quarkus
+    app.openshift.io/runtime: java
 spec:
   replicas: 1
   selector:
@@ -20,5 +20,5 @@ spec:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: my-cluster-kafka-bootstrap:9092
           name: quarkus-eda-demo
-          image: quay.io/danieloh30/quarkus-eda-demo:3.10.2
+          image: quay.io/danieloh30/quarkus-eda-demo:3.11.0
           imagePullPolicy: IfNotPresent
