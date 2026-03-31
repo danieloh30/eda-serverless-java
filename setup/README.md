@@ -6,7 +6,7 @@ Setup files for deploying things prior to starting the demo
     - This will install the following operators:
         - Red Hat OpenShift Serverless
         - Custom Metrics Autoscaler
-        - Red Hat Integration - AMQ Streams
+        - Red Hat Integration - AMQ Streams (Streams for Apache Kafka)
 4. Wait for all the operators to finish provisioning
 5. `oc apply -f 2-crs.yml`
     - This will install the following CRs
@@ -24,4 +24,23 @@ Setup files for deploying things prior to starting the demo
         - `kafka-keda` (use case 2)
         - `kafka-knative` (use case 3)
         - `kafka-keda-knative` (use case 4)
-    - It will also install the `Kafka` and `KafkaTopic` CRs into all of the namespaces
+    - It will also install the following resources into all namespaces:
+        - `Kafka` cluster (KRaft mode enabled, no ZooKeeper)
+        - `KafkaNodePool` with controller and broker roles
+        - `KafkaTopic` (my-topic with 10 partitions)
+
+## Architecture Notes
+
+### Kafka Cluster Configuration
+- **Mode**: KRaft (Kafka Raft metadata mode) - modern Kafka without ZooKeeper
+- **Version**: 3.8.0
+- **Node Pools**: Each cluster uses a single node pool (`my-pool`) with 3 replicas
+- **Roles**: Combined controller and broker roles for simplified deployment
+- **Storage**: Persistent volumes (10Gi per node)
+- **Replication**: 3 replicas with min.insync.replicas=2 for high availability
+
+### Why KRaft Mode?
+- Eliminates ZooKeeper dependency
+- Simplified architecture and operations
+- Better scalability and performance
+- Required for modern Strimzi deployments with node pools

@@ -18,8 +18,13 @@ apiVersion: kafka.strimzi.io/v1beta2
 metadata:
   name: my-cluster
   namespace: kafka-hpa
+  annotations:
+    strimzi.io/node-pools: enabled
+    strimzi.io/kraft: enabled
 spec:
   kafka:
+    version: 3.8.0
+    metadataVersion: 3.8-IV0
     replicas: 3
     listeners:
       - name: plain
@@ -36,15 +41,29 @@ spec:
       transaction.state.log.min.isr: 2
       default.replication.factor: 3
       min.insync.replicas: 2
-    storage:
-      type: ephemeral
-  zookeeper:
-    replicas: 3
-    storage:
-      type: ephemeral
   entityOperator:
     topicOperator: {}
     userOperator: {}
+---
+kind: KafkaNodePool
+apiVersion: kafka.strimzi.io/v1beta2
+metadata:
+  name: my-pool
+  namespace: kafka-hpa
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  replicas: 3
+  roles:
+    - controller
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 10Gi
+        deleteClaim: false
 ---
 kind: KafkaTopic
 apiVersion: kafka.strimzi.io/v1beta2
@@ -78,8 +97,13 @@ apiVersion: kafka.strimzi.io/v1beta2
 metadata:
   name: my-cluster
   namespace: kafka-keda
+  annotations:
+    strimzi.io/node-pools: enabled
+    strimzi.io/kraft: enabled
 spec:
   kafka:
+    version: 3.8.0
+    metadataVersion: 3.8-IV0
     replicas: 3
     listeners:
       - name: plain
@@ -96,15 +120,29 @@ spec:
       transaction.state.log.min.isr: 2
       default.replication.factor: 3
       min.insync.replicas: 2
-    storage:
-      type: ephemeral
-  zookeeper:
-    replicas: 3
-    storage:
-      type: ephemeral
   entityOperator:
     topicOperator: {}
     userOperator: {}
+---
+kind: KafkaNodePool
+apiVersion: kafka.strimzi.io/v1beta2
+metadata:
+  name: my-pool
+  namespace: kafka-keda
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  replicas: 3
+  roles:
+    - controller
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 10Gi
+        deleteClaim: false
 ---
 kind: KafkaTopic
 apiVersion: kafka.strimzi.io/v1beta2
@@ -138,8 +176,13 @@ apiVersion: kafka.strimzi.io/v1beta2
 metadata:
   name: my-cluster
   namespace: kafka-knative
+  annotations:
+    strimzi.io/node-pools: enabled
+    strimzi.io/kraft: enabled
 spec:
   kafka:
+    version: 3.8.0
+    metadataVersion: 3.8-IV0
     replicas: 3
     listeners:
       - name: plain
@@ -156,15 +199,29 @@ spec:
       transaction.state.log.min.isr: 2
       default.replication.factor: 3
       min.insync.replicas: 2
-    storage:
-      type: ephemeral
-  zookeeper:
-    replicas: 3
-    storage:
-      type: ephemeral
   entityOperator:
     topicOperator: {}
     userOperator: {}
+---
+kind: KafkaNodePool
+apiVersion: kafka.strimzi.io/v1beta2
+metadata:
+  name: my-pool
+  namespace: kafka-knative
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  replicas: 3
+  roles:
+    - controller
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 10Gi
+        deleteClaim: false
 ---
 kind: KafkaTopic
 apiVersion: kafka.strimzi.io/v1beta2
@@ -198,8 +255,13 @@ apiVersion: kafka.strimzi.io/v1beta2
 metadata:
   name: my-cluster
   namespace: kafka-keda-knative
+  annotations:
+    strimzi.io/node-pools: enabled
+    strimzi.io/kraft: enabled
 spec:
   kafka:
+    version: 3.8.0
+    metadataVersion: 3.8-IV0
     replicas: 3
     listeners:
       - name: plain
@@ -216,15 +278,29 @@ spec:
       transaction.state.log.min.isr: 2
       default.replication.factor: 3
       min.insync.replicas: 2
-    storage:
-      type: ephemeral
-  zookeeper:
-    replicas: 3
-    storage:
-      type: ephemeral
   entityOperator:
     topicOperator: {}
     userOperator: {}
+---
+kind: KafkaNodePool
+apiVersion: kafka.strimzi.io/v1beta2
+metadata:
+  name: my-pool
+  namespace: kafka-keda-knative
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  replicas: 3
+  roles:
+    - controller
+    - broker
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 10Gi
+        deleteClaim: false
 ---
 kind: KafkaTopic
 apiVersion: kafka.strimzi.io/v1beta2
