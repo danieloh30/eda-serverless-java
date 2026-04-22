@@ -1,0 +1,45 @@
+version: 2
+updates:
+  # Dependabot for quarkus-eda-demo
+  - package-ecosystem: "maven"
+    directory: "/quarkus-eda-demo"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "quarkus-eda-demo"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      quarkus:
+        patterns:
+          - "io.quarkus*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Dependabot for quarkus-eda-knative-demo
+  - package-ecosystem: "maven"
+    directory: "/quarkus-eda-knative-demo"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "quarkus-eda-knative-demo"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      quarkus:
+        patterns:
+          - "io.quarkus*"
+        update-types:
+          - "minor"
+          - "patch"
