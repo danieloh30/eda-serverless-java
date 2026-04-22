@@ -51,11 +51,11 @@ jobs:
           DEMO_VERSION="${{ steps.extract-version-demo.outputs.version }}"
           KNATIVE_VERSION="${{ steps.extract-version-knative.outputs.version }}"
           
-          # Fetch base branch for comparison
-          git fetch origin ${{ github.base_ref }}
+          # Get list of changed files in this PR using GitHub API
+          CHANGED_FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
           
-          # Check which pom.xml was modified in this PR
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          echo "Changed files in this PR:"
+          echo "$CHANGED_FILES"
           
           if echo "$CHANGED_FILES" | grep -q "quarkus-eda-demo/pom.xml"; then
             echo "updated_project=quarkus-eda-demo" >> $GITHUB_OUTPUT
@@ -69,6 +69,8 @@ jobs:
             echo "No relevant pom.xml changes detected"
             exit 0
           fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update application.properties in quarkus-eda-demo
         if: steps.determine-project.outputs.updated_project == 'quarkus-eda-demo'
