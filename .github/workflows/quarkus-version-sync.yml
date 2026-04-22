@@ -47,31 +47,30 @@ jobs:
 
       - name: Determine which project was updated
         id: determine-project
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEMO_VERSION: ${{ steps.extract-version-demo.outputs.version }}
+          KNATIVE_VERSION: ${{ steps.extract-version-knative.outputs.version }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          DEMO_VERSION="${{ steps.extract-version-demo.outputs.version }}"
-          KNATIVE_VERSION="${{ steps.extract-version-knative.outputs.version }}"
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          
           # Get list of changed files in this PR using GitHub API
           CHANGED_FILES=$(gh pr view "${PR_NUMBER}" --json files --jq '.files[].path')
           
           echo "Changed files in this PR:"
-          echo "$CHANGED_FILES"
+          echo "${CHANGED_FILES}"
           
-          if echo "$CHANGED_FILES" | grep -q "quarkus-eda-demo/pom.xml"; then
+          if echo "${CHANGED_FILES}" | grep -q "quarkus-eda-demo/pom.xml"; then
             echo "updated_project=quarkus-eda-demo" >> $GITHUB_OUTPUT
-            echo "new_version=$DEMO_VERSION" >> $GITHUB_OUTPUT
-            echo "Dependabot updated quarkus-eda-demo to version $DEMO_VERSION"
-          elif echo "$CHANGED_FILES" | grep -q "quarkus-eda-knative-demo/pom.xml"; then
+            echo "new_version=${DEMO_VERSION}" >> $GITHUB_OUTPUT
+            echo "Dependabot updated quarkus-eda-demo to version ${DEMO_VERSION}"
+          elif echo "${CHANGED_FILES}" | grep -q "quarkus-eda-knative-demo/pom.xml"; then
             echo "updated_project=quarkus-eda-knative-demo" >> $GITHUB_OUTPUT
-            echo "new_version=$KNATIVE_VERSION" >> $GITHUB_OUTPUT
-            echo "Dependabot updated quarkus-eda-knative-demo to version $KNATIVE_VERSION"
+            echo "new_version=${KNATIVE_VERSION}" >> $GITHUB_OUTPUT
+            echo "Dependabot updated quarkus-eda-knative-demo to version ${KNATIVE_VERSION}"
           else
             echo "No relevant pom.xml changes detected"
             exit 0
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update application.properties in quarkus-eda-demo
         if: steps.determine-project.outputs.updated_project == 'quarkus-eda-demo'

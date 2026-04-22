@@ -44,35 +44,34 @@ jobs:
 
       - name: Test PR file detection
         id: test-detection
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEMO_VERSION: ${{ steps.extract-version-demo.outputs.version }}
+          KNATIVE_VERSION: ${{ steps.extract-version-knative.outputs.version }}
+          PR_NUMBER: ${{ inputs.pr_number }}
         run: |
-          DEMO_VERSION="${{ steps.extract-version-demo.outputs.version }}"
-          KNATIVE_VERSION="${{ steps.extract-version-knative.outputs.version }}"
-          PR_NUMBER="${{ inputs.pr_number }}"
-          
           echo "Testing with PR #${PR_NUMBER}"
           
           # Get list of changed files in the PR using GitHub API
           CHANGED_FILES=$(gh pr view "${PR_NUMBER}" --json files --jq '.files[].path')
           
           echo "Changed files in PR #${PR_NUMBER}:"
-          echo "$CHANGED_FILES"
+          echo "${CHANGED_FILES}"
           
-          if echo "$CHANGED_FILES" | grep -q "quarkus-eda-demo/pom.xml"; then
+          if echo "${CHANGED_FILES}" | grep -q "quarkus-eda-demo/pom.xml"; then
             echo "✅ Detected: quarkus-eda-demo/pom.xml was updated"
             echo "updated_project=quarkus-eda-demo" >> $GITHUB_OUTPUT
-            echo "new_version=$DEMO_VERSION" >> $GITHUB_OUTPUT
-            echo "Would update to version: $DEMO_VERSION"
-          elif echo "$CHANGED_FILES" | grep -q "quarkus-eda-knative-demo/pom.xml"; then
+            echo "new_version=${DEMO_VERSION}" >> $GITHUB_OUTPUT
+            echo "Would update to version: ${DEMO_VERSION}"
+          elif echo "${CHANGED_FILES}" | grep -q "quarkus-eda-knative-demo/pom.xml"; then
             echo "✅ Detected: quarkus-eda-knative-demo/pom.xml was updated"
             echo "updated_project=quarkus-eda-knative-demo" >> $GITHUB_OUTPUT
-            echo "new_version=$KNATIVE_VERSION" >> $GITHUB_OUTPUT
-            echo "Would update to version: $KNATIVE_VERSION"
+            echo "new_version=${KNATIVE_VERSION}" >> $GITHUB_OUTPUT
+            echo "Would update to version: ${KNATIVE_VERSION}"
           else
             echo "❌ No relevant pom.xml changes detected"
             echo "updated_project=none" >> $GITHUB_OUTPUT
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Show what would be updated
         if: steps.test-detection.outputs.updated_project == 'quarkus-eda-demo'
