@@ -1,0 +1,107 @@
+name: Test Version Sync (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to test'
+        required: true
+        type: number
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  test-sync:
+    name: Test Version Sync Logic
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Extract Quarkus version from quarkus-eda-demo
+        id: extract-version-demo
+        run: |
+          VERSION=$(grep -oP '<quarkus.platform.version>\K[^<]+' quarkus-eda-demo/pom.xml)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version from quarkus-eda-demo: $VERSION"
+
+      - name: Extract Quarkus version from quarkus-eda-knative-demo
+        id: extract-version-knative
+        run: |
+          VERSION=$(grep -oP '<quarkus.platform.version>\K[^<]+' quarkus-eda-knative-demo/pom.xml)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version from quarkus-eda-knative-demo: $VERSION"
+
+      - name: Test PR file detection
+        id: test-detection
+        run: |
+          DEMO_VERSION="${{ steps.extract-version-demo.outputs.version }}"
+          KNATIVE_VERSION="${{ steps.extract-version-knative.outputs.version }}"
+          
+          echo "Testing with PR #${{ inputs.pr_number }}"
+          
+          # Get list of changed files in the PR using GitHub API
+          CHANGED_FILES=$(gh pr view ${{ inputs.pr_number }} --json files --jq '.files[].path')
+          
+          echo "Changed files in PR #${{ inputs.pr_number }}:"
+          echo "$CHANGED_FILES"
+          
+          if echo "$CHANGED_FILES" | grep -q "quarkus-eda-demo/pom.xml"; then
+            echo "✅ Detected: quarkus-eda-demo/pom.xml was updated"
+            echo "updated_project=quarkus-eda-demo" >> $GITHUB_OUTPUT
+            echo "new_version=$DEMO_VERSION" >> $GITHUB_OUTPUT
+            echo "Would update to version: $DEMO_VERSION"
+          elif echo "$CHANGED_FILES" | grep -q "quarkus-eda-knative-demo/pom.xml"; then
+            echo "✅ Detected: quarkus-eda-knative-demo/pom.xml was updated"
+            echo "updated_project=quarkus-eda-knative-demo" >> $GITHUB_OUTPUT
+            echo "new_version=$KNATIVE_VERSION" >> $GITHUB_OUTPUT
+            echo "Would update to version: $KNATIVE_VERSION"
+          else
+            echo "❌ No relevant pom.xml changes detected"
+            echo "updated_project=none" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show what would be updated
+        if: steps.test-detection.outputs.updated_project == 'quarkus-eda-demo'
+        run: |
+          NEW_VERSION="${{ steps.test-detection.outputs.new_version }}"
+          echo "Would update the following files with version $NEW_VERSION:"
+          echo "1. quarkus-eda-demo/src/main/resources/application.properties"
+          echo "   Line: quarkus.container-image.tag=$NEW_VERSION"
+          echo ""
+          echo "2. quarkus-eda-demo/kube/02-keda-deployment.yaml"
+          echo "   Line: image: quay.io/danieloh30/quarkus-eda-demo:$NEW_VERSION"
+          echo ""
+          echo "Current content of application.properties:"
+          grep "quarkus.container-image.tag" quarkus-eda-demo/src/main/resources/application.properties || echo "Not found"
+          echo ""
+          echo "Current content of 02-keda-deployment.yaml:"
+          grep "image: quay.io/danieloh30/quarkus-eda-demo" quarkus-eda-demo/kube/02-keda-deployment.yaml || echo "Not found"
+
+      - name: Test Summary
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **PR Number**: ${{ inputs.pr_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Detected Project**: ${{ steps.test-detection.outputs.updated_project }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **New Version**: ${{ steps.test-detection.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.test-detection.outputs.updated_project }}" != "none" ]; then
+            echo "✅ **Status**: Detection logic works correctly!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Status**: No pom.xml changes detected in this PR" >> $GITHUB_STEP_SUMMARY
+          fi
+
