@@ -50,9 +50,10 @@ jobs:
         run: |
           DEMO_VERSION="${{ steps.extract-version-demo.outputs.version }}"
           KNATIVE_VERSION="${{ steps.extract-version-knative.outputs.version }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
           
           # Get list of changed files in this PR using GitHub API
-          CHANGED_FILES=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path')
+          CHANGED_FILES=$(gh pr view "${PR_NUMBER}" --json files --jq '.files[].path')
           
           echo "Changed files in this PR:"
           echo "$CHANGED_FILES"

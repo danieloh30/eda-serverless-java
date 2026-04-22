@@ -47,13 +47,14 @@ jobs:
         run: |
           DEMO_VERSION="${{ steps.extract-version-demo.outputs.version }}"
           KNATIVE_VERSION="${{ steps.extract-version-knative.outputs.version }}"
+          PR_NUMBER="${{ inputs.pr_number }}"
           
-          echo "Testing with PR #${{ inputs.pr_number }}"
+          echo "Testing with PR #${PR_NUMBER}"
           
           # Get list of changed files in the PR using GitHub API
-          CHANGED_FILES=$(gh pr view ${{ inputs.pr_number }} --json files --jq '.files[].path')
+          CHANGED_FILES=$(gh pr view "${PR_NUMBER}" --json files --jq '.files[].path')
           
-          echo "Changed files in PR #${{ inputs.pr_number }}:"
+          echo "Changed files in PR #${PR_NUMBER}:"
           echo "$CHANGED_FILES"
           
           if echo "$CHANGED_FILES" | grep -q "quarkus-eda-demo/pom.xml"; then
@@ -92,14 +93,18 @@ jobs:
 
       - name: Test Summary
         run: |
+          PR_NUMBER="${{ inputs.pr_number }}"
+          UPDATED_PROJECT="${{ steps.test-detection.outputs.updated_project }}"
+          NEW_VERSION="${{ steps.test-detection.outputs.new_version }}"
+          
           echo "## Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **PR Number**: ${{ inputs.pr_number }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Detected Project**: ${{ steps.test-detection.outputs.updated_project }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **New Version**: ${{ steps.test-detection.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **PR Number**: ${PR_NUMBER}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Detected Project**: ${UPDATED_PROJECT}" >> $GITHUB_STEP_SUMMARY
+          echo "- **New Version**: ${NEW_VERSION}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ "${{ steps.test-detection.outputs.updated_project }}" != "none" ]; then
+          if [ "${UPDATED_PROJECT}" != "none" ]; then
             echo "✅ **Status**: Detection logic works correctly!" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ **Status**: No pom.xml changes detected in this PR" >> $GITHUB_STEP_SUMMARY
