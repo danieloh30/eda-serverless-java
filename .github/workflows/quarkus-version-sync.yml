@@ -51,6 +51,9 @@ jobs:
           DEMO_VERSION="${{ steps.extract-version-demo.outputs.version }}"
           KNATIVE_VERSION="${{ steps.extract-version-knative.outputs.version }}"
           
+          # Fetch base branch for comparison
+          git fetch origin ${{ github.base_ref }}
+          
           # Check which pom.xml was modified in this PR
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
           
