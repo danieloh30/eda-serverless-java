@@ -8,9 +8,6 @@ updates:
       day: "monday"
       time: "09:00"
     open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "quarkus-eda-demo"
     commit-message:
       prefix: "chore(deps)"
       include: "scope"
@@ -30,9 +27,6 @@ updates:
       day: "monday"
       time: "09:00"
     open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "quarkus-eda-knative-demo"
     commit-message:
       prefix: "chore(deps)"
       include: "scope"
