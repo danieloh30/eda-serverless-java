@@ -34,14 +34,14 @@ jobs:
       - name: Extract Quarkus version from quarkus-eda-demo
         id: extract-version-demo
         run: |
-          VERSION=$(grep -oP '<quarkus.platform.version>\K[^<]+' quarkus-eda-demo/pom.xml)
+          VERSION=$(grep '<quarkus.platform.version>' quarkus-eda-demo/pom.xml | sed 's/.*<quarkus.platform.version>\(.*\)<\/quarkus.platform.version>.*/\1/' | tr -d ' ')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version from quarkus-eda-demo: $VERSION"
 
       - name: Extract Quarkus version from quarkus-eda-knative-demo
         id: extract-version-knative
         run: |
-          VERSION=$(grep -oP '<quarkus.platform.version>\K[^<]+' quarkus-eda-knative-demo/pom.xml)
+          VERSION=$(grep '<quarkus.platform.version>' quarkus-eda-knative-demo/pom.xml | sed 's/.*<quarkus.platform.version>\(.*\)<\/quarkus.platform.version>.*/\1/' | tr -d ' ')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version from quarkus-eda-knative-demo: $VERSION"
 
@@ -130,20 +130,17 @@ jobs:
         run: |
           git pull origin ${{ github.head_ref }}
 
-      - name: Login to Quay.io
-        uses: docker/login-action@v3
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_PASSWORD }}
-          logout: true
-
       - name: Build and push quarkus-eda-demo
         working-directory: quarkus-eda-demo
+        env:
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
         run: |
           ./mvnw clean package -DskipTests \
             -Dquarkus.container-image.build=true \
-            -Dquarkus.container-image.push=true
+            -Dquarkus.container-image.push=true \
+            -Dquarkus.container-image.username=${QUAY_USERNAME} \
+            -Dquarkus.container-image.password=${QUAY_PASSWORD}
           echo "Successfully built and pushed quarkus-eda-demo container image"
 
   auto-merge:
