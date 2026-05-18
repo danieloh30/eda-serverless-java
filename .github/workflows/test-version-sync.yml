@@ -31,14 +31,14 @@ jobs:
       - name: Extract Quarkus version from quarkus-eda-demo
         id: extract-version-demo
         run: |
-          VERSION=$(grep -oP '<quarkus.platform.version>\K[^<]+' quarkus-eda-demo/pom.xml)
+          VERSION=$(grep '<quarkus.platform.version>' quarkus-eda-demo/pom.xml | sed 's/.*<quarkus.platform.version>\(.*\)<\/quarkus.platform.version>.*/\1/' | tr -d ' ')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version from quarkus-eda-demo: $VERSION"
 
       - name: Extract Quarkus version from quarkus-eda-knative-demo
         id: extract-version-knative
         run: |
-          VERSION=$(grep -oP '<quarkus.platform.version>\K[^<]+' quarkus-eda-knative-demo/pom.xml)
+          VERSION=$(grep '<quarkus.platform.version>' quarkus-eda-knative-demo/pom.xml | sed 's/.*<quarkus.platform.version>\(.*\)<\/quarkus.platform.version>.*/\1/' | tr -d ' ')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version from quarkus-eda-knative-demo: $VERSION"
 
@@ -74,21 +74,28 @@ jobs:
           fi
 
       - name: Show what would be updated
-        if: steps.test-detection.outputs.updated_project == 'quarkus-eda-demo'
+        if: steps.test-detection.outputs.updated_project != '' && steps.test-detection.outputs.updated_project != 'none'
         run: |
+          UPDATED_PROJECT="${{ steps.test-detection.outputs.updated_project }}"
           NEW_VERSION="${{ steps.test-detection.outputs.new_version }}"
-          echo "Would update the following files with version $NEW_VERSION:"
-          echo "1. quarkus-eda-demo/src/main/resources/application.properties"
-          echo "   Line: quarkus.container-image.tag=$NEW_VERSION"
-          echo ""
-          echo "2. quarkus-eda-demo/kube/02-keda-deployment.yaml"
-          echo "   Line: image: quay.io/danieloh30/quarkus-eda-demo:$NEW_VERSION"
-          echo ""
-          echo "Current content of application.properties:"
-          grep "quarkus.container-image.tag" quarkus-eda-demo/src/main/resources/application.properties || echo "Not found"
-          echo ""
-          echo "Current content of 02-keda-deployment.yaml:"
-          grep "image: quay.io/danieloh30/quarkus-eda-demo" quarkus-eda-demo/kube/02-keda-deployment.yaml || echo "Not found"
+          
+          if [ "$UPDATED_PROJECT" = "quarkus-eda-demo" ]; then
+            echo "Would update the following files with version $NEW_VERSION:"
+            echo "1. quarkus-eda-demo/src/main/resources/application.properties"
+            echo "   Line: quarkus.container-image.tag=$NEW_VERSION"
+            echo ""
+            echo "2. quarkus-eda-demo/kube/02-keda-deployment.yaml"
+            echo "   Line: image: quay.io/danieloh30/quarkus-eda-demo:$NEW_VERSION"
+            echo ""
+            echo "Current content of application.properties:"
+            grep "quarkus.container-image.tag" quarkus-eda-demo/src/main/resources/application.properties || echo "Not found"
+            echo ""
+            echo "Current content of 02-keda-deployment.yaml:"
+            grep "image: quay.io/danieloh30/quarkus-eda-demo" quarkus-eda-demo/kube/02-keda-deployment.yaml || echo "Not found"
+          elif [ "$UPDATED_PROJECT" = "quarkus-eda-knative-demo" ]; then
+            echo "Would update quarkus-eda-knative-demo to version $NEW_VERSION"
+            echo "Note: This project may have different configuration files to update"
+          fi
 
       - name: Test Summary
         run: |
