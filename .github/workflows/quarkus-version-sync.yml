@@ -133,6 +133,9 @@ jobs:
       - name: Build and push quarkus-eda-demo
         working-directory: quarkus-eda-demo
         env:
+          # NOTE: These secrets must be configured as Dependabot secrets (not just repository secrets)
+          # Go to: Settings > Secrets and variables > Dependabot > New repository secret
+          # This is required because Dependabot PRs cannot access regular repository secrets for security
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
         run: |
