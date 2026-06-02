@@ -1,4 +1,5 @@
 {
     "ansible.python.interpreterPath": "/opt/homebrew/bin/python3.11",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.compile.nullAnalysis.mode": "automatic"
 }
