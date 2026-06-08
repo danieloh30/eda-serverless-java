@@ -147,7 +147,7 @@ jobs:
           echo "Successfully built and pushed quarkus-eda-demo container image"
 
   auto-merge:
-    name: Auto-merge Dependabot PR
+    name: Enable Auto-merge for Dependabot PR
     runs-on: ubuntu-latest
     needs: build-and-push
     if: github.actor == 'dependabot[bot]'
@@ -162,9 +162,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Approve PR
+      - name: Comment on PR
         run: |
-          gh pr review --approve "${{ github.event.pull_request.number }}"
+          gh pr comment "${{ github.event.pull_request.number }}" --body "✅ Build and push completed successfully. Auto-merge enabled - PR will merge automatically once approved."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
