@@ -163,7 +163,7 @@ jobs:
           BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
           ERROR_LOG=$(mktemp)
           if ! IS_PROTECTED=$(gh api "repos/${GITHUB_REPOSITORY}/branches/${BASE_BRANCH}" --jq '.protected' 2>"${ERROR_LOG}"); then
-            echo "Failed to fetch branch metadata for ${BASE_BRANCH}. Check GITHUB_TOKEN permissions, network access, and that the branch name is valid. Details: $(cat "${ERROR_LOG}")" >&2
+            echo "Failed to fetch branch metadata for ${BASE_BRANCH}. Check GITHUB_TOKEN permissions, API access, and that the branch name is valid. Details: $(cat "${ERROR_LOG}")" >&2
             rm -f "${ERROR_LOG}"
             exit 1
           fi
@@ -175,7 +175,7 @@ jobs:
           elif [ "${IS_PROTECTED}" = "false" ]; then
             ERROR_LOG=$(mktemp)
             if ! REVIEW_DECISION=$(gh pr view "${PR_NUMBER}" --json reviewDecision --jq '.reviewDecision' 2>"${ERROR_LOG}"); then
-              echo "Failed to fetch review status for PR #${PR_NUMBER}. Check GITHUB_TOKEN permissions and PR visibility. Details: $(cat "${ERROR_LOG}")" >&2
+              echo "Failed to fetch review status for PR #${PR_NUMBER}. Check GITHUB_TOKEN permissions and ensure the PR exists and is accessible to this workflow. Details: $(cat "${ERROR_LOG}")" >&2
               rm -f "${ERROR_LOG}"
               exit 1
             fi
