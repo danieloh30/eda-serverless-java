@@ -160,10 +160,18 @@ jobs:
         id: merge-pr
         run: |
           BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
-          if ! IS_PROTECTED=$(gh api "repos/${GITHUB_REPOSITORY}/branches/${BASE_BRANCH}" --jq '.protected'); then
-            echo "Failed to determine whether ${BASE_BRANCH} is protected." >&2
+          if ! BRANCH_PROTECTION_RESPONSE=$(gh api "repos/${GITHUB_REPOSITORY}/branches/${BASE_BRANCH}" --jq '.protected'); then
+            echo "Failed to fetch branch metadata for ${BASE_BRANCH}." >&2
             exit 1
           fi
+
+          case "${BRANCH_PROTECTION_RESPONSE}" in
+            true|false) IS_PROTECTED="${BRANCH_PROTECTION_RESPONSE}" ;;
+            *)
+              echo "Unexpected branch protection response for ${BASE_BRANCH}: ${BRANCH_PROTECTION_RESPONSE}" >&2
+              exit 1
+              ;;
+          esac
 
           if [ "${IS_PROTECTED}" = "true" ]; then
             gh pr merge --auto --squash "${{ github.event.pull_request.number }}"
