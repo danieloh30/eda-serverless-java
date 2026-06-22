@@ -156,15 +156,46 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Enable auto-merge
+      - name: Merge PR or enable auto-merge
+        id: merge-pr
         run: |
-          gh pr merge --auto --squash "${{ github.event.pull_request.number }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          ERROR_LOG=$(mktemp)
+          if ! IS_PROTECTED=$(gh api "repos/${GITHUB_REPOSITORY}/branches/${BASE_BRANCH}" --jq '.protected' 2>"${ERROR_LOG}"); then
+            echo "Failed to fetch branch metadata for ${BASE_BRANCH}. Check GITHUB_TOKEN permissions, API access, and that the branch name is valid. Details: $(cat "${ERROR_LOG}")" >&2
+            rm -f "${ERROR_LOG}"
+            exit 1
+          fi
+          rm -f "${ERROR_LOG}"
+
+          if [ "${IS_PROTECTED}" = "true" ]; then
+            gh pr merge --auto --squash "${PR_NUMBER}"
+            echo "comment=✅ Build and push completed successfully. Auto-merge enabled - PR will merge automatically once approved." >> "$GITHUB_OUTPUT"
+          elif [ "${IS_PROTECTED}" = "false" ]; then
+            ERROR_LOG=$(mktemp)
+            if ! REVIEW_DECISION=$(gh pr view "${PR_NUMBER}" --json reviewDecision --jq '.reviewDecision' 2>"${ERROR_LOG}"); then
+              echo "Failed to fetch review status for PR #${PR_NUMBER}. Check GITHUB_TOKEN permissions and ensure the PR exists and is accessible to this workflow. Details: $(cat "${ERROR_LOG}")" >&2
+              rm -f "${ERROR_LOG}"
+              exit 1
+            fi
+            rm -f "${ERROR_LOG}"
+
+            if [ "${REVIEW_DECISION}" = "APPROVED" ]; then
+              gh pr merge --squash "${PR_NUMBER}"
+              echo "comment=✅ Build and push completed successfully. PR was squashed and merged because branch protection is not enabled on ${BASE_BRANCH}." >> "$GITHUB_OUTPUT"
+            else
+              echo "comment=✅ Build and push completed successfully. Branch protection is not enabled on ${BASE_BRANCH}, so auto-merge is unavailable. Waiting for approval and manual merge." >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "Unexpected branch protection response for ${BASE_BRANCH}: ${IS_PROTECTED}" >&2
+            exit 1
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Comment on PR
         run: |
-          gh pr comment "${{ github.event.pull_request.number }}" --body "✅ Build and push completed successfully. Auto-merge enabled - PR will merge automatically once approved."
+          gh pr comment "${{ github.event.pull_request.number }}" --body "${{ steps.merge-pr.outputs.comment }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
