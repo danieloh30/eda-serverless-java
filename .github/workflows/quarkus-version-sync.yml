@@ -160,7 +160,10 @@ jobs:
         id: merge-pr
         run: |
           BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
-          IS_PROTECTED=$(gh api "repos/${GITHUB_REPOSITORY}/branches/${BASE_BRANCH}" --jq '.protected')
+          if ! IS_PROTECTED=$(gh api "repos/${GITHUB_REPOSITORY}/branches/${BASE_BRANCH}" --jq '.protected'); then
+            echo "Failed to determine whether ${BASE_BRANCH} is protected." >&2
+            exit 1
+          fi
 
           if [ "${IS_PROTECTED}" = "true" ]; then
             gh pr merge --auto --squash "${{ github.event.pull_request.number }}"
