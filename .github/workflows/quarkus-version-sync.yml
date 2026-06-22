@@ -156,15 +156,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Enable auto-merge
+      - name: Merge PR or enable auto-merge
+        id: merge-pr
         run: |
-          gh pr merge --auto --squash "${{ github.event.pull_request.number }}"
+          BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          IS_PROTECTED=$(gh api "repos/${GITHUB_REPOSITORY}/branches/${BASE_BRANCH}" --jq '.protected')
+
+          if [ "${IS_PROTECTED}" = "true" ]; then
+            gh pr merge --auto --squash "${{ github.event.pull_request.number }}"
+            echo "comment=✅ Build and push completed successfully. Auto-merge enabled - PR will merge automatically once approved." >> "$GITHUB_OUTPUT"
+          else
+            gh pr merge --squash "${{ github.event.pull_request.number }}"
+            echo "comment=✅ Build and push completed successfully. PR was squashed and merged because branch protection is not enabled on ${BASE_BRANCH}." >> "$GITHUB_OUTPUT"
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Comment on PR
         run: |
-          gh pr comment "${{ github.event.pull_request.number }}" --body "✅ Build and push completed successfully. Auto-merge enabled - PR will merge automatically once approved."
+          gh pr comment "${{ github.event.pull_request.number }}" --body "${{ steps.merge-pr.outputs.comment }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
