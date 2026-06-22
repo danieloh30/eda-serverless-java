@@ -160,25 +160,23 @@ jobs:
         id: merge-pr
         run: |
           BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
-          if ! BRANCH_PROTECTION_RESPONSE=$(gh api "repos/${GITHUB_REPOSITORY}/branches/${BASE_BRANCH}" --jq '.protected'); then
-            echo "Failed to fetch branch metadata for ${BASE_BRANCH}." >&2
+          ERROR_LOG=$(mktemp)
+          if ! IS_PROTECTED=$(gh api "repos/${GITHUB_REPOSITORY}/branches/${BASE_BRANCH}" --jq '.protected' 2>"${ERROR_LOG}"); then
+            echo "Failed to fetch branch metadata for ${BASE_BRANCH}: $(cat "${ERROR_LOG}")" >&2
+            rm -f "${ERROR_LOG}"
             exit 1
           fi
-
-          case "${BRANCH_PROTECTION_RESPONSE}" in
-            true|false) IS_PROTECTED="${BRANCH_PROTECTION_RESPONSE}" ;;
-            *)
-              echo "Unexpected branch protection response for ${BASE_BRANCH}: ${BRANCH_PROTECTION_RESPONSE}" >&2
-              exit 1
-              ;;
-          esac
+          rm -f "${ERROR_LOG}"
 
           if [ "${IS_PROTECTED}" = "true" ]; then
             gh pr merge --auto --squash "${{ github.event.pull_request.number }}"
             echo "comment=✅ Build and push completed successfully. Auto-merge enabled - PR will merge automatically once approved." >> "$GITHUB_OUTPUT"
-          else
+          elif [ "${IS_PROTECTED}" = "false" ]; then
             gh pr merge --squash "${{ github.event.pull_request.number }}"
             echo "comment=✅ Build and push completed successfully. PR was squashed and merged because branch protection is not enabled on ${BASE_BRANCH}." >> "$GITHUB_OUTPUT"
+          else
+            echo "Unexpected branch protection response for ${BASE_BRANCH}: ${IS_PROTECTED}" >&2
+            exit 1
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
